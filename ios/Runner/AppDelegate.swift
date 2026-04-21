@@ -10,9 +10,10 @@ import UIKit
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
     flutterEngine.run()
-    GeneratedPluginRegistrant.register(with: flutterEngine)
 
     let controller = FlutterViewController(engine: flutterEngine, nibName: nil, bundle: nil)
+    GeneratedPluginRegistrant.register(with: controller)
+
     window = UIWindow(frame: UIScreen.main.bounds)
     window?.rootViewController = controller
     window?.makeKeyAndVisible()
