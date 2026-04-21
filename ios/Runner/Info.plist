@@ -66,5 +66,7 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Die App benoetigt Zugriff auf deine Fotomediathek, damit du z. B. Katalog- oder Belegdateien auswaehlen und importieren kannst.</string>
 </dict>
 </plist>
