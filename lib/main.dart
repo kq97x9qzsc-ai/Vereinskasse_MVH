@@ -196,7 +196,10 @@ class _VereinsKasseAppState extends State<VereinsKasseApp> {
       canvasColor: Colors.black,
       cardColor: const Color(0xFF1A1A1A),
       dividerColor: const Color(0xFF464646),
-      dividerTheme: const DividerThemeData(color: Color(0xFF464646), thickness: 1),
+      dividerTheme: const DividerThemeData(
+        color: Color(0xFF464646),
+        thickness: 1,
+      ),
       cardTheme: const CardThemeData(
         color: Color(0xFF1A1A1A),
         surfaceTintColor: Colors.transparent,
@@ -317,6 +320,7 @@ class _KasseHomePageState extends State<KasseHomePage>
   String selectedWorkday = 'Mo';
   bool _dataReady = false;
   String? _initError;
+
   /// Offene Eintraege in [upload_queue] (done=0); fuer rote Kopfzeile bei aktivem Supabase-Upload.
   int _pendingUploadCount = 0;
   final ScrollController _receiptLineScrollController = ScrollController();
@@ -1024,23 +1028,34 @@ class _KasseHomePageState extends State<KasseHomePage>
     );
   }
 
-  Widget _workdayDropdown() {
+  Widget _workdayDropdown({double scale = 1.0}) {
     final workdays = settings.availableWorkdays;
+    final effectiveScale = scale.clamp(kUiScaleMin, kUiScaleMax);
     return DropdownButtonFormField<String>(
       initialValue: selectedWorkday,
       isExpanded: true,
-      style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 11),
-      decoration: const InputDecoration(
+      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+        fontSize: (14 * effectiveScale).clamp(12, 16),
+      ),
+      decoration: InputDecoration(
         labelText: 'Arbeitstag',
-        isDense: true,
-        labelStyle: TextStyle(fontSize: 10),
-        contentPadding: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+        isDense: false,
+        labelStyle: TextStyle(fontSize: (11 * effectiveScale).clamp(10, 13)),
+        contentPadding: EdgeInsets.symmetric(
+          horizontal: (10 * effectiveScale).clamp(8, 12),
+          vertical: (10 * effectiveScale).clamp(8, 12),
+        ),
       ),
       items: workdays
           .map(
             (d) => DropdownMenuItem(
               value: d,
-              child: Text(d, style: const TextStyle(fontSize: 12)),
+              child: Text(
+                d,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontSize: (14 * effectiveScale).clamp(12, 16)),
+              ),
             ),
           )
           .toList(),
@@ -1063,17 +1078,22 @@ class _KasseHomePageState extends State<KasseHomePage>
 
   Widget _buildHeader() {
     final cs = Theme.of(context).colorScheme;
+    final rs = settings.receiptUiScale.clamp(kUiScaleMin, kUiScaleMax);
     final uploadBacklog = _pendingUploadCount > 0;
-    final headerBg =
-        uploadBacklog ? cs.errorContainer : cs.surfaceContainerHighest;
+    final headerBg = uploadBacklog
+        ? cs.errorContainer
+        : cs.surfaceContainerHighest;
     final headerFg = uploadBacklog ? cs.onErrorContainer : null;
     final btnStyle = FilledButton.styleFrom(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      padding: EdgeInsets.symmetric(
+        horizontal: (14 * rs).clamp(10, 16),
+        vertical: (10 * rs).clamp(8, 12),
+      ),
       visualDensity: VisualDensity.standard,
-      minimumSize: const Size(0, 48),
+      minimumSize: Size(0, (42 * rs).clamp(36, 48)),
       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
       textStyle: TextStyle(
-        fontSize: 14,
+        fontSize: (14 * rs).clamp(12, 16),
         fontWeight: FontWeight.w600,
         color: headerFg,
       ),
@@ -1087,47 +1107,49 @@ class _KasseHomePageState extends State<KasseHomePage>
           style: TextStyle(color: headerFg),
           child: IconTheme.merge(
             data: IconThemeData(color: iconColor),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                FilledButton.tonal(
-                  style: btnStyle,
-                  onPressed: () => setState(() {
-                    showOpenReceipts = true;
-                    showAllReceipts = false;
-                  }),
-                  child: const Text('Offene Belege'),
-                ),
-                const SizedBox(width: 6),
-                FilledButton.tonal(
-                  style: btnStyle,
-                  onPressed: () => setState(() {
-                    showAllReceipts = true;
-                    showOpenReceipts = false;
-                  }),
-                  child: const Text('Alle Belege'),
-                ),
-                const SizedBox(width: 6),
-                Expanded(flex: 2, child: _workdayDropdown()),
-                IconButton(
-                  iconSize: 22,
-                  constraints:
-                      const BoxConstraints(minWidth: 34, minHeight: 34),
-                  padding: EdgeInsets.zero,
-                  onPressed: _showRevenueDialog,
-                  icon: const Icon(Icons.show_chart),
-                  tooltip: 'Umsaetze',
-                ),
-                IconButton(
-                  iconSize: 22,
-                  constraints:
-                      const BoxConstraints(minWidth: 34, minHeight: 34),
-                  padding: EdgeInsets.zero,
-                  onPressed: _showSettingsDialog,
-                  icon: const Icon(Icons.settings),
-                  tooltip: 'Einstellungen',
-                ),
-              ],
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  FilledButton.tonal(
+                    style: btnStyle,
+                    onPressed: () => setState(() {
+                      showOpenReceipts = true;
+                      showAllReceipts = false;
+                    }),
+                    child: const Text('Offene Belege'),
+                  ),
+                  const SizedBox(width: 6),
+                  FilledButton.tonal(
+                    style: btnStyle,
+                    onPressed: () => setState(() {
+                      showAllReceipts = true;
+                      showOpenReceipts = false;
+                    }),
+                    child: const Text('Alle Belege'),
+                  ),
+                  const SizedBox(width: 6),
+                  SizedBox(
+                    width: math.max(110.0, 124 * rs),
+                    child: _workdayDropdown(scale: rs),
+                  ),
+                  const SizedBox(width: 6),
+                  FilledButton.tonalIcon(
+                    style: btnStyle,
+                    onPressed: _showRevenueDialog,
+                    icon: const Icon(Icons.show_chart),
+                    label: const Text('Umsaetze'),
+                  ),
+                  const SizedBox(width: 6),
+                  FilledButton.tonalIcon(
+                    style: btnStyle,
+                    onPressed: _showSettingsDialog,
+                    icon: const Icon(Icons.settings),
+                    label: const Text('Einstellungen'),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -1854,8 +1876,9 @@ class _KasseHomePageState extends State<KasseHomePage>
                   final item = source.items[index];
                   return ListTile(
                     title: Text('${item.quantity} x ${item.articleName}'),
-                    subtitle:
-                        const Text('Tippen: 1 Stueck in den linken Beleg'),
+                    subtitle: const Text(
+                      'Tippen: 1 Stueck in den linken Beleg',
+                    ),
                     onTap: () => _moveOneItemFromSplitSource(item),
                   );
                 },
@@ -2136,7 +2159,8 @@ class _KasseHomePageState extends State<KasseHomePage>
     if (invoice.isEmpty) {
       return;
     }
-    final supabaseIncomplete = settings.uploadSalesToSupabase &&
+    final supabaseIncomplete =
+        settings.uploadSalesToSupabase &&
         (settings.supabaseUrl.trim().isEmpty ||
             settings.supabaseAnonKey.trim().isEmpty);
     final result = await showDialog<CashResult>(
@@ -2182,7 +2206,10 @@ class _KasseHomePageState extends State<KasseHomePage>
     if (settings.uploadSalesToSupabase) {
       final payload = closed.toSalesPayload();
       final queueId = await _db.enqueueUpload(payload);
-      final ok = await _supabase.tryUpload(settings: settings, payload: payload);
+      final ok = await _supabase.tryUpload(
+        settings: settings,
+        payload: payload,
+      );
       if (ok) {
         await _db.markQueueDone(queueId);
       }
@@ -2303,7 +2330,7 @@ class _KasseHomePageState extends State<KasseHomePage>
                 left == 0
                     ? 'Alle Umsaetze sind bei Supabase eingegangen.'
                     : 'Noch $left ausstehende(r) Upload(s). Netzwerk oder '
-                        'Supabase-Zugangsdaten pruefen.',
+                          'Supabase-Zugangsdaten pruefen.',
               ),
             ),
           );
@@ -2595,9 +2622,7 @@ class _CashDialogState extends State<CashDialog> {
 
     final tipsTile = CheckboxListTile(
       value: tipsMode,
-      onChanged: blockPay
-          ? null
-          : (v) => _applyTipsMode(v ?? false),
+      onChanged: blockPay ? null : (v) => _applyTipsMode(v ?? false),
       title: const Text('Stimmt so!'),
       controlAffinity: ListTileControlAffinity.leading,
       dense: true,
@@ -2699,9 +2724,7 @@ class _CashDialogState extends State<CashDialog> {
                     ])
                       OutlinedButton(
                         style: digitStyle,
-                        onPressed: blockPay
-                            ? null
-                            : () => _onNumpad(n),
+                        onPressed: blockPay ? null : () => _onNumpad(n),
                         child: Text(n),
                       ),
                     FilledButton(
@@ -2810,7 +2833,8 @@ class _SettingsDialogState extends State<SettingsDialog> {
       textDirection: ui.TextDirection.ltr,
       maxLines: 1,
     )..layout();
-    return math.max(6.0, tp.width + 1);
+    // Reserve extra width so iPhone does not clip multi-digit positions.
+    return math.max(26.0, tp.width + 10);
   }
 
   void _scheduleClearPendingArticleAutofocus() {
@@ -2929,11 +2953,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
                 ),
                 Expanded(
                   child: TabBarView(
-                    children: [
-                      _groupsTab(),
-                      _articlesTab(),
-                      _settingsTab(),
-                    ],
+                    children: [_groupsTab(), _articlesTab(), _settingsTab()],
                   ),
                 ),
                 Padding(
@@ -3469,8 +3489,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
           ),
           SwitchListTile(
             value: localSettings.batteryDarkMode,
-            onChanged: (v) =>
-                setState(() => localSettings.batteryDarkMode = v),
+            onChanged: (v) => setState(() => localSettings.batteryDarkMode = v),
             title: const Text('Energiespar-Dunkelmodus'),
             subtitle: const Text(
               'AMOLED-Schwarz mit hohem Kontrast fuer lange Nutzung und bessere Lesbarkeit.',
@@ -3487,9 +3506,8 @@ class _SettingsDialogState extends State<SettingsDialog> {
           const SizedBox(height: 4),
           CheckboxListTile(
             value: localSettings.uploadSalesToSupabase,
-            onChanged: (v) => setState(
-              () => localSettings.uploadSalesToSupabase = v ?? true,
-            ),
+            onChanged: (v) =>
+                setState(() => localSettings.uploadSalesToSupabase = v ?? true),
             title: const Text('Umsaetze uploaden'),
             subtitle: const Text(
               'Wenn aktiv, sind Bar-Zahlung und Numpad erst nutzbar, '
@@ -4213,7 +4231,9 @@ class _SettingsDialogState extends State<SettingsDialog> {
         if (!keep.contains(id)) {
           final node = _articlePosFocusNodes.remove(id);
           if (node != null) {
-            node.unfocus(disposition: UnfocusDisposition.previouslyFocusedChild);
+            node.unfocus(
+              disposition: UnfocusDisposition.previouslyFocusedChild,
+            );
             node.dispose();
           }
         }
@@ -4280,8 +4300,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
         localSettings.supabaseStorageBucket = saveSupabaseStorageBucket;
       }
       if (saveSupabaseStorageObjectPath != null) {
-        localSettings.supabaseStorageObjectPath =
-            saveSupabaseStorageObjectPath;
+        localSettings.supabaseStorageObjectPath = saveSupabaseStorageObjectPath;
       }
       localGroups = newGroups;
       localArticles = newArticles;
@@ -4310,9 +4329,9 @@ class _SettingsDialogState extends State<SettingsDialog> {
     );
     if (payloadBytes == null) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Export fehlgeschlagen.')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Export fehlgeschlagen.')));
       }
       return;
     }
@@ -4324,7 +4343,9 @@ class _SettingsDialogState extends State<SettingsDialog> {
             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         name: name,
       );
-      await SharePlus.instance.share(ShareParams(files: [xfile], subject: name));
+      await SharePlus.instance.share(
+        ShareParams(files: [xfile], subject: name),
+      );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -4374,10 +4395,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
     try {
       if (_pickedFileLooksLikeXlsx(f)) {
         final data = decodeCatalogXlsx(rawBytes);
-        _applyCatalogXlsxImport(
-          data,
-          replaceEntireCatalogFromDownload: true,
-        );
+        _applyCatalogXlsxImport(data, replaceEntireCatalogFromDownload: true);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -4406,21 +4424,25 @@ class _SettingsDialogState extends State<SettingsDialog> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Import erfolgreich (JSON). Daten wurden uebernommen.'),
+            content: Text(
+              'Import erfolgreich (JSON). Daten wurden uebernommen.',
+            ),
           ),
         );
       }
     } on CatalogXlsxException catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Excel-Import: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Excel-Import: $e')));
       }
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Import fehlgeschlagen: Datei nicht lesbar oder kein gueltiges JSON.'),
+            content: Text(
+              'Import fehlgeschlagen: Datei nicht lesbar oder kein gueltiges JSON.',
+            ),
           ),
         );
       }
@@ -4448,9 +4470,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
             replaceEntireCatalogFromDownload: true,
           );
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Katalog von Supabase importiert.'),
-            ),
+            const SnackBar(content: Text('Katalog von Supabase importiert.')),
           );
         },
       ),
@@ -4479,7 +4499,8 @@ class _SupabaseCatalogDownloadDialog extends StatefulWidget {
     String saveKey,
     String saveBucket,
     String saveObjectPath,
-  ) onImported;
+  )
+  onImported;
 
   @override
   State<_SupabaseCatalogDownloadDialog> createState() =>
@@ -4575,25 +4596,17 @@ class _SupabaseCatalogDownloadDialogState
               Text(
                 'Bucket braucht Leserechte fuer den Anon-Key (z. B. oeffentlicher Bucket oder Policy). '
                 'Pfad relativ zum Bucket, z. B. katalog/Fruehlingsfest.xlsx',
-                style: TextStyle(
-                  fontSize: 13,
-                  color: cs.onSurfaceVariant,
-                ),
+                style: TextStyle(fontSize: 13, color: cs.onSurfaceVariant),
               ),
               const SizedBox(height: 12),
               if (_errorText != null)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 8),
-                  child: Text(
-                    _errorText!,
-                    style: TextStyle(color: cs.error),
-                  ),
+                  child: Text(_errorText!, style: TextStyle(color: cs.error)),
                 ),
               TextField(
                 controller: _urlC,
-                decoration: const InputDecoration(
-                  labelText: 'Supabase URL',
-                ),
+                decoration: const InputDecoration(labelText: 'Supabase URL'),
                 enabled: !_busy,
               ),
               TextField(
@@ -4606,9 +4619,7 @@ class _SupabaseCatalogDownloadDialogState
               ),
               TextField(
                 controller: _bucketC,
-                decoration: const InputDecoration(
-                  labelText: 'Storage Bucket',
-                ),
+                decoration: const InputDecoration(labelText: 'Storage Bucket'),
                 enabled: !_busy,
               ),
               TextField(
@@ -5150,10 +5161,15 @@ class SettingsData {
       showPriceOnTiles: merged['showPriceOnTiles'] != false,
       supabaseUrl: (merged['supabaseUrl'] ?? '').toString(),
       supabaseAnonKey: (merged['supabaseAnonKey'] ?? '').toString(),
-      supabaseStorageBucket: _settingsJsonString(merged['supabaseStorageBucket']),
-      supabaseStorageObjectPath:
-          _settingsJsonString(merged['supabaseStorageObjectPath']),
-      uploadSalesToSupabase: _parseUploadSalesFlag(merged['uploadSalesToSupabase']),
+      supabaseStorageBucket: _settingsJsonString(
+        merged['supabaseStorageBucket'],
+      ),
+      supabaseStorageObjectPath: _settingsJsonString(
+        merged['supabaseStorageObjectPath'],
+      ),
+      uploadSalesToSupabase: _parseUploadSalesFlag(
+        merged['uploadSalesToSupabase'],
+      ),
       articleCatalogSeedVersion: _coerceToInt(
         merged['articleCatalogSeedVersion'],
         defaultValue: d.articleCatalogSeedVersion,
