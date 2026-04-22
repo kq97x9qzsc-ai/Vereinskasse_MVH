@@ -1107,49 +1107,51 @@ class _KasseHomePageState extends State<KasseHomePage>
           style: TextStyle(color: headerFg),
           child: IconTheme.merge(
             data: IconThemeData(color: iconColor),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  FilledButton.tonal(
-                    style: btnStyle,
-                    onPressed: () => setState(() {
-                      showOpenReceipts = true;
-                      showAllReceipts = false;
-                    }),
-                    child: const Text('Offene Belege'),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                FilledButton.tonal(
+                  style: btnStyle,
+                  onPressed: () => setState(() {
+                    showOpenReceipts = true;
+                    showAllReceipts = false;
+                  }),
+                  child: const Text('Offene Belege'),
+                ),
+                const SizedBox(width: 6),
+                FilledButton.tonal(
+                  style: btnStyle,
+                  onPressed: () => setState(() {
+                    showAllReceipts = true;
+                    showOpenReceipts = false;
+                  }),
+                  child: const Text('Alle Belege'),
+                ),
+                const SizedBox(width: 6),
+                Expanded(child: _workdayDropdown(scale: rs)),
+                IconButton(
+                  iconSize: 22,
+                  constraints: const BoxConstraints(
+                    minWidth: 34,
+                    minHeight: 34,
                   ),
-                  const SizedBox(width: 6),
-                  FilledButton.tonal(
-                    style: btnStyle,
-                    onPressed: () => setState(() {
-                      showAllReceipts = true;
-                      showOpenReceipts = false;
-                    }),
-                    child: const Text('Alle Belege'),
+                  padding: EdgeInsets.zero,
+                  onPressed: _showRevenueDialog,
+                  icon: const Icon(Icons.show_chart),
+                  tooltip: 'Umsaetze',
+                ),
+                IconButton(
+                  iconSize: 22,
+                  constraints: const BoxConstraints(
+                    minWidth: 34,
+                    minHeight: 34,
                   ),
-                  const SizedBox(width: 6),
-                  SizedBox(
-                    width: math.max(110.0, 124 * rs),
-                    child: _workdayDropdown(scale: rs),
-                  ),
-                  const SizedBox(width: 6),
-                  FilledButton.tonalIcon(
-                    style: btnStyle,
-                    onPressed: _showRevenueDialog,
-                    icon: const Icon(Icons.show_chart),
-                    label: const Text('Umsaetze'),
-                  ),
-                  const SizedBox(width: 6),
-                  FilledButton.tonalIcon(
-                    style: btnStyle,
-                    onPressed: _showSettingsDialog,
-                    icon: const Icon(Icons.settings),
-                    label: const Text('Einstellungen'),
-                  ),
-                ],
-              ),
+                  padding: EdgeInsets.zero,
+                  onPressed: _showSettingsDialog,
+                  icon: const Icon(Icons.settings),
+                  tooltip: 'Einstellungen',
+                ),
+              ],
             ),
           ),
         ),
