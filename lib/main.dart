@@ -2454,16 +2454,25 @@ class _CashDialogState extends State<CashDialog> {
   double get roundTo =>
       double.tryParse(roundController.text.replaceAll(',', '.')) ?? 0;
 
+  int _toCents(double value) => (value * 100).round();
+
+  double _fromCents(int cents) => cents / 100.0;
+
+  int get _totalCents => _toCents(widget.total);
+  int get _givenCents => _toCents(given);
+  int get _roundToCents => _toCents(roundTo);
+
   /// Zahlbetrag deckt Rechnung nicht (Gegeben und/oder Aufrunden zu niedrig).
   bool get _incompleteCashPayment =>
-      given < widget.total || roundTo < widget.total;
+      _givenCents < _totalCents || _roundToCents < _totalCents;
 
   /// Rückgeld: ohne „Stimmt so!“ = Aufrunden auf − Rechnungssumme; mit „Stimmt so!“ = Gegeben − Aufrunden auf.
-  double get rueckgeldDisplay =>
-      tipsMode ? (given - roundTo) : (roundTo - widget.total);
+  double get rueckgeldDisplay => _fromCents(
+    tipsMode ? (_givenCents - _roundToCents) : (_roundToCents - _totalCents),
+  );
 
   /// Trinkgeld bei „Stimmt so!“: gleiche Differenz (Aufrunden − Zahlbetrag).
-  double get trinkgeldDisplay => roundTo - widget.total;
+  double get trinkgeldDisplay => _fromCents(_roundToCents - _totalCents);
 
   void _onNumpad(String value) {
     if (!tipsMode) {
