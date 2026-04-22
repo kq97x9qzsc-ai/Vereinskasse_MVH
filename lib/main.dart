@@ -2835,8 +2835,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
       textDirection: ui.TextDirection.ltr,
       maxLines: 1,
     )..layout();
-    // Reserve extra width so iPhone does not clip multi-digit positions.
-    return math.max(26.0, tp.width + 10);
+    return tp.width;
   }
 
   void _scheduleClearPendingArticleAutofocus() {
@@ -3194,10 +3193,13 @@ class _SettingsDialogState extends State<SettingsDialog> {
               final posCtrl = _posControllerFor(a.id, i + 1);
               final posFocus = _posFocusFor(a.id);
               final headStyle = articleRowStyle;
-              final posW = _measurePosDigitsWidth(
+              final rawPosW = _measurePosDigitsWidth(
                 posCtrl.text.isEmpty ? '${i + 1}' : posCtrl.text,
                 headStyle,
               );
+              final posW = Theme.of(context).brightness == Brightness.dark
+                  ? math.max(26.0, rawPosW + 10)
+                  : math.max(18.0, rawPosW + 4);
               return Card(
                 key: tileKey,
                 margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -3335,7 +3337,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
                   ),
                   children: [
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(10, 0, 10, 6),
+                      padding: const EdgeInsets.fromLTRB(10, 8, 10, 6),
                       child: Column(
                         children: [
                           TextFormField(
@@ -3350,6 +3352,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
                               a.name = v;
                             }),
                           ),
+                          const SizedBox(height: 10),
                           TextFormField(
                             initialValue: a.price.toStringAsFixed(2),
                             style: articleDetailStyle,
@@ -3360,6 +3363,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
                                 double.tryParse(v.replaceAll(',', '.')) ??
                                 a.price,
                           ),
+                          const SizedBox(height: 10),
                           DropdownButtonFormField<String>(
                             initialValue: a.groupId,
                             style: articleDetailStyle,
@@ -3550,6 +3554,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
             decoration: const InputDecoration(labelText: 'Supabase URL'),
             onChanged: (v) => localSettings.supabaseUrl = v.trim(),
           ),
+          const SizedBox(height: 10),
           TextFormField(
             initialValue: localSettings.supabaseAnonKey,
             decoration: const InputDecoration(labelText: 'Supabase Anon Key'),
