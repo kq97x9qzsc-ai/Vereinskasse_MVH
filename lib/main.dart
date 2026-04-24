@@ -2825,6 +2825,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
   late SettingsData localSettings;
   late List<ArticleGroup> localGroups;
   late List<Article> localArticles;
+  bool _manualUploadRunning = false;
   final Map<String, GlobalKey> _articleTileKeys = {};
   final Map<String, TextEditingController> _articlePosControllers = {};
   final Map<String, FocusNode> _articlePosFocusNodes = {};
@@ -2894,6 +2895,31 @@ class _SettingsDialogState extends State<SettingsDialog> {
     final want = '${idx + 1}';
     if (c.text != want) {
       c.text = want;
+    }
+  }
+
+  Future<void> _runManualSupabaseUpload() async {
+    if (_manualUploadRunning ||
+        widget.onManualSupabaseUpload == null ||
+        !localSettings.uploadSalesToSupabase) {
+      return;
+    }
+    setState(() => _manualUploadRunning = true);
+    try {
+      await widget.onManualSupabaseUpload!.call();
+    } catch (e) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Upload fehlgeschlagen: $e'),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _manualUploadRunning = false);
+      }
     }
   }
 
@@ -3546,13 +3572,20 @@ class _SettingsDialogState extends State<SettingsDialog> {
                   ),
                 ),
                 FilledButton.tonalIcon(
-                  onPressed: !localSettings.uploadSalesToSupabase
+                  onPressed: !localSettings.uploadSalesToSupabase ||
+                          _manualUploadRunning
                       ? null
-                      : () async {
-                          await widget.onManualSupabaseUpload!();
-                        },
-                  icon: const Icon(Icons.cloud_upload_outlined),
-                  label: const Text('Jetzt hochladen'),
+                      : _runManualSupabaseUpload,
+                  icon: _manualUploadRunning
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.cloud_upload_outlined),
+                  label: Text(
+                    _manualUploadRunning ? 'Lade hoch...' : 'Jetzt hochladen',
+                  ),
                 ),
               ],
             ),
