@@ -2906,6 +2906,9 @@ class _SettingsDialogState extends State<SettingsDialog> {
     }
     setState(() => _manualUploadRunning = true);
     try {
+      // Ensure freshly entered Supabase credentials are persisted
+      // before retrying the queued upload from the parent state.
+      await _persistChangesInBackground();
       await widget.onManualSupabaseUpload!.call();
     } catch (e) {
       if (!mounted) {
